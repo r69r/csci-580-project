@@ -138,6 +138,8 @@
     <ClCompile Include="CS580HWView.cpp" />
     <ClCompile Include="disp.cpp" />
     <ClCompile Include="MainFrm.cpp" />
+    <ClCompile Include="MyHelperFunction.cpp" />
+    <ClCompile Include="MyRaycast.cpp" />
     <ClCompile Include="rend.cpp" />
     <ClCompile Include="RotateDlg.cpp" />
     <ClCompile Include="ScaleDlg.cpp" />
@@ -162,6 +164,8 @@
     <ClInclude Include="disp.h" />
     <ClInclude Include="gz.h" />
     <ClInclude Include="MainFrm.h" />
+    <ClInclude Include="MyHelperFunction.h" />
+    <ClInclude Include="MyRaycast.h" />
     <ClInclude Include="rend.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="RotateDlg.h" />

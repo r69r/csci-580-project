@@ -12,6 +12,8 @@
 #include "Gz.h"
 #include "disp.h"
 #include "rend.h"
+#include "MyRaycast.h"
+#include "MyHelperFunction.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -22,6 +24,8 @@ static char THIS_FILE[]=__FILE__;
 #define INFILE  "ppot.asc"
 #define OUTFILE "output.ppm"
 
+
+#define		M_PI	(3.14159265359)
 
 extern int tex_fun(float u, float v, GzColor color); /* image texture function */
 extern int ptex_fun(float u, float v, GzColor color); /* procedural texture function */
@@ -416,6 +420,37 @@ int Application5::Render()
 			m_pDisplay->fbuf[(i + (j * m_pDisplay->xres))].blue = max(0, min(b, 4095));
 		}
 	}
+
+	//depth of field raycast
+	GzCoord cameraPos;
+	cameraPos[0] = m_pDisplay->xres/2.0f;
+	cameraPos[1] = m_pDisplay->yres / 2.0f;
+	float radian = (M_PI / 180) * m_pRender1->camera.FOV;
+	float d = 1.0f / tan(radian / 2);//m_pDisplay->xres / tan(radian / 2);
+	cameraPos[2] = -d;
+	for (int j = 0; j < m_pDisplay->yres; j++) {
+		for (int i = 0; i < m_pDisplay->xres; i++) {
+			GzPixel pixel = m_pDisplay->fbuf[i + j*m_pDisplay->xres];
+			GzCoord pixelCoord{ i, j, pixel.z/(float)INT_MAX };
+			MyRay fray;
+			GzInitRay(&fray, cameraPos, pixelCoord);
+			MyRaycast* focal = new MyRaycast();
+			GzInitRaycastWithFocal(focal, &fray, 100.0f, m_pRender1);
+			GzCoord focalPoint;
+			coordCopy(focalPoint, focal->focalPoint);
+			int rayCount = 1;
+			for (int a = 0; a != rayCount; ++a) {
+				MyRay ray;
+				GzInitRay(&ray, cameraPos, focalPoint);
+				MyRaycast *raycast = new MyRaycast();
+				GzInitRaycast(raycast, &ray, m_pRender1);
+				GzPixel hitPixel = m_pDisplay->fbuf[(int)raycast->nearestHit[0] + ((int)raycast->nearestHit[1]) * m_pDisplay->xres];
+				delete raycast;
+			}
+			delete focal;
+		}
+	}
+
 
 	GzFlushDisplay2File(outfile, m_pDisplay); 	/* write out or update display to file*/
 	GzFlushDisplay2FrameBuffer(m_pFrameBuffer, m_pDisplay);	// write out or update display to frame buffer
