@@ -57,9 +57,13 @@ int GzFindNearestHit(MyRaycast* raycast, GzRender* render) {
 	GzDisplay* disp = render->display;
 	while (coord[0] > 0 && coord[0] < disp->xres && coord[1] > 0 && coord[1] < disp->yres) {
 		int x = coord[0], y = coord[1];
+		x = coord[0] - x > 0.5f ? x + 1 : x;
+		y = coord[1] - y > 0.5f ? y + 1 : y;
 		float z = coord[2];//GzFindZWithXYCoord(ray, coord);
 		float pz = render->display->fbuf[DISPARRAY(x, y)].z/ (float)INT_MAX;
 		if (pz <= z) {
+			coord[0] = x;
+			coord[1] = y;
 			coordCopy(raycast->nearestHit, coord);
 			//raycast->nearestHit[2] = z;
 			return GZ_SUCCESS;
