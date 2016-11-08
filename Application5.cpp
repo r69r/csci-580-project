@@ -426,27 +426,52 @@ int Application5::Render()
 	cameraPos[0] = m_pDisplay->xres/2.0f;
 	cameraPos[1] = m_pDisplay->yres / 2.0f;
 	float radian = (M_PI / 180) * m_pRender1->camera.FOV;
-	float d = 1.0f / tan(radian / 2);//m_pDisplay->xres / tan(radian / 2);
+	float d = 3.0f / tan(radian / 2); //(float)m_pDisplay->xres / tan(radian / 2);
+	//d = 1.0f / d;
 	cameraPos[2] = -d;
 	for (int j = 0; j < m_pDisplay->yres; j++) {
 		for (int i = 0; i < m_pDisplay->xres; i++) {
 			GzPixel pixel = m_pDisplay->fbuf[i + j*m_pDisplay->xres];
-			GzCoord pixelCoord{ i, j, pixel.z/(float)INT_MAX };
+			GzCoord pixelCoord{ i, j, pixel.z / (float)INT_MAX};
 			MyRay fray;
 			GzInitRay(&fray, cameraPos, pixelCoord);
 			MyRaycast* focal = new MyRaycast();
-			GzInitRaycastWithFocal(focal, &fray, 100.0f, m_pRender1);
+			GzInitRaycastWithFocal(focal, &fray, 1.5f, m_pRender1);
 			GzCoord focalPoint;
 			coordCopy(focalPoint, focal->focalPoint);
 			int rayCount = 1;
+			float apertureSize = 1.0f;
+			int blurColor[3] = { 0,0,0 };
 			for (int a = 0; a != rayCount; ++a) {
 				MyRay ray;
+				GzCoord aperturePos;
+				coordCopy(aperturePos, cameraPos);
+				aperturePos[0] += apertureSize * sin((float)a / (float)rayCount*2.0f*M_PI);
+				aperturePos[1] += apertureSize * cos((float)a / (float)rayCount*2.0f*M_PI);
 				GzInitRay(&ray, cameraPos, focalPoint);
 				MyRaycast *raycast = new MyRaycast();
 				GzInitRaycast(raycast, &ray, m_pRender1);
 				GzPixel hitPixel = m_pDisplay->fbuf[(int)raycast->nearestHit[0] + ((int)raycast->nearestHit[1]) * m_pDisplay->xres];
+				blurColor[RED] += hitPixel.red;
+				blurColor[GREEN] += hitPixel.green;
+				blurColor[BLUE] += hitPixel.blue;
+				if (hitPixel.red != pixel.red) {
+					float dx = raycast->nearestHit[0] - cameraPos[0];
+					float dy = raycast->nearestHit[1] - cameraPos[1];
+					GzCoord dd = { dx, dy, raycast->nearestHit[2] - cameraPos[2] };
+					coordNormalize(dd);
+				    printf("1");
+				}
 				delete raycast;
 			}
+			for (int a = 0; a != 3; ++a) {
+				blurColor[a] /= rayCount;
+				while (blurColor[a] > SHORT_MAX)blurColor[a] >> 1;
+			}
+			m_pDisplay->fbuf[i + j*m_pDisplay->xres].red = blurColor[RED];
+			m_pDisplay->fbuf[i + j*m_pDisplay->xres].blue = blurColor[BLUE];
+			m_pDisplay->fbuf[i + j*m_pDisplay->xres].green = blurColor[GREEN];
+
 			delete focal;
 		}
 	}
