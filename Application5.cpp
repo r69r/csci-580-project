@@ -426,19 +426,19 @@ int Application5::Render()
 	cameraPos[0] = m_pDisplay->xres/2.0f;
 	cameraPos[1] = m_pDisplay->yres / 2.0f;
 	float radian = (M_PI / 180) * m_pRender1->camera.FOV;
-	float d = m_pDisplay->xres / tan(radian / 2);
+	float d = 1.0f / tan(radian / 2);//m_pDisplay->xres / tan(radian / 2);
 	cameraPos[2] = -d;
 	for (int j = 0; j < m_pDisplay->yres; j++) {
 		for (int i = 0; i < m_pDisplay->xres; i++) {
-			GzPixel pixel = m_pDisplay->fbuf[i + j*m_pDisplay->yres];
-			GzCoord pixelCoord{ i, j, pixel.z };
+			GzPixel pixel = m_pDisplay->fbuf[i + j*m_pDisplay->xres];
+			GzCoord pixelCoord{ i, j, pixel.z/(float)INT_MAX };
 			MyRay fray;
 			GzInitRay(&fray, cameraPos, pixelCoord);
 			MyRaycast* focal = new MyRaycast();
 			GzInitRaycastWithFocal(focal, &fray, 100.0f, m_pRender1);
 			GzCoord focalPoint;
 			coordCopy(focalPoint, focal->focalPoint);
-			int rayCount = 200;
+			int rayCount = 1;
 			for (int a = 0; a != rayCount; ++a) {
 				MyRay ray;
 				GzInitRay(&ray, cameraPos, focalPoint);
@@ -447,6 +447,7 @@ int Application5::Render()
 				GzPixel hitPixel = m_pDisplay->fbuf[(int)raycast->nearestHit[0] + ((int)raycast->nearestHit[1]) * m_pDisplay->xres];
 				delete raycast;
 			}
+			delete focal;
 		}
 	}
 
