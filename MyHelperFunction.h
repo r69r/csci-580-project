@@ -19,3 +19,5 @@ void coordNormalize(GzCoord coord);
 
 void coordMulti(GzCoord coord, float times);
 float coordDot(GzCoord left, GzCoord right);
+
+void roundUpFloat(float& num);

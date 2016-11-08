@@ -57,3 +57,7 @@ float coordDot(GzCoord left, GzCoord right) {
 	}
 	return res;
 }
+
+void roundUpFloat(float& num) {
+	if (num - (int)num > 0.5f) num+=1;
+}
