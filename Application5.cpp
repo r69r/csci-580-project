@@ -426,13 +426,13 @@ int Application5::Render()
 	cameraPos[0] = m_pDisplay->xres/2.0f;
 	cameraPos[1] = m_pDisplay->yres / 2.0f;
 	float radian = (M_PI / 180) * m_pRender1->camera.FOV;
-	float d = 1.0f / tan(radian / 2); //(float)m_pDisplay->xres / tan(radian / 2);
+	float d = (float)m_pDisplay->xres /2.0f / tan(radian / 2);
 	//d = 1.0f / d;
 	cameraPos[2] = -d;
 	//Set parameters here
-	float focalDist = 1.8f;
-	float apertureSize = 0.05f;
-	float blurWeight = 0.5f;
+	float focalDist = d*0.8f;
+	float apertureSize = 1.0f;
+	float blurWeight = 0.9f;
 
 	int blurColors[256][256][3];
 

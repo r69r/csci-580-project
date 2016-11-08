@@ -41,11 +41,10 @@ void GzChangeDirLengthXYtoOne(GzCoord dir) {
 
 int GzFindFocalPoint(MyRaycast* raycast, float focalDistance) {
 	MyRay* ray = raycast->ray;
-	GzCoord focalPoint;
-	coordCopy(focalPoint, ray->direction);
-	coordMulti(focalPoint, focalDistance);
-	coordPlus(focalPoint, ray->startPoint);
-	coordCopy(raycast->focalPoint, focalPoint);
+	coordCopy(raycast->focalPoint, ray->direction);
+	coordMulti(raycast->focalPoint, focalDistance);
+	coordPlus(raycast->focalPoint, ray->startPoint);
+	//coordCopy(raycast->focalPoint, focalPoint);
 	return GZ_SUCCESS;
 }
 
