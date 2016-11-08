@@ -429,21 +429,24 @@ int Application5::Render()
 	float d = 1.0f / tan(radian / 2); //(float)m_pDisplay->xres / tan(radian / 2);
 	//d = 1.0f / d;
 	cameraPos[2] = -d;
+	//Set parameters here
+	float focalDist = 1.8f;
+	float apertureSize = 0.05f;
+	float blurWeight = 0.5f;
 
 	int blurColors[256][256][3];
 
 	for (int j = 0; j < m_pDisplay->yres; j++) {
 		for (int i = 0; i < m_pDisplay->xres; i++) {
 			GzPixel pixel = m_pDisplay->fbuf[i + j*m_pDisplay->xres];
-			GzCoord pixelCoord{ i, j, pixel.z / (float)INT_MAX};
+			GzCoord pixelCoord{ i, j, pixel.z / (float)INT_MAX}; // change z to 0-1 
 			MyRay fray;
 			GzInitRay(&fray, cameraPos, pixelCoord);
 			MyRaycast* focal = new MyRaycast();
-			GzInitRaycastWithFocal(focal, &fray, 1.7f, m_pRender1);
+			GzInitRaycastWithFocal(focal, &fray, focalDist, m_pRender1);
 			GzCoord focalPoint;
 			coordCopy(focalPoint, focal->focalPoint);
 			int rayCount = 10;
-			float apertureSize = 0.05f;
 			blurColors[i][j][0] = 0;
 			blurColors[i][j][1] = 0;
 			blurColors[i][j][2] = 0;
@@ -461,6 +464,7 @@ int Application5::Render()
 				//roundUpFloat(raycast->nearestHit[1]);
 				GzPixel hitPixel = m_pDisplay->fbuf[(int)roundf(raycast->nearestHit[0]) + ((int)roundf(raycast->nearestHit[1])) * m_pDisplay->xres];
 				
+				//Add colors to get average
 				blurColors[i][j][RED] += hitPixel.red;
 				blurColors[i][j][GREEN] += hitPixel.green;
 				blurColors[i][j][BLUE] += hitPixel.blue;
@@ -474,6 +478,7 @@ int Application5::Render()
 				}*/
 				delete raycast;
 			}
+			//average colors
 			for (int a = 0; a != 3; ++a) {
 				blurColors[i][j][a] /= rayCount;
 				while (blurColors[i][j][a] > SHORT_MAX)blurColors[i][j][a] >> 1;
@@ -483,11 +488,12 @@ int Application5::Render()
 		}
 	}
 
+	//Apply blur with weight
 	for (int j = 0; j < m_pDisplay->yres; j++) {
 		for (int i = 0; i < m_pDisplay->xres; i++) {
-			m_pDisplay->fbuf[i + j*m_pDisplay->xres].red = blurColors[i][j][RED];
-			m_pDisplay->fbuf[i + j*m_pDisplay->xres].blue = blurColors[i][j][BLUE];
-			m_pDisplay->fbuf[i + j*m_pDisplay->xres].green = blurColors[i][j][GREEN];
+			m_pDisplay->fbuf[i + j*m_pDisplay->xres].red = m_pDisplay->fbuf[i + j*m_pDisplay->xres].red * (1.0f - blurWeight) + blurWeight*blurColors[i][j][RED];
+			m_pDisplay->fbuf[i + j*m_pDisplay->xres].blue = m_pDisplay->fbuf[i + j*m_pDisplay->xres].blue * (1.0f - blurWeight) + blurWeight*blurColors[i][j][BLUE];
+			m_pDisplay->fbuf[i + j*m_pDisplay->xres].green = m_pDisplay->fbuf[i + j*m_pDisplay->xres].green * (1.0f - blurWeight) + blurWeight*blurColors[i][j][GREEN];
 		}
 	}
 	// End depth of field raycast
