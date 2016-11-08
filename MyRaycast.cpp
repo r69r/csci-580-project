@@ -30,10 +30,13 @@ float GzFindZWithXYCoord(MyRay* ray, GzCoord coord) {
 }
 
 void GzChangeDirLengthXYtoOne(GzCoord dir) {
-	float x = dir[0], z = dir[2];
+	float x = dir[0], y = dir[1], z = dir[2];
 	dir[2] = 0;
 	coordNormalize(dir);
-	dir[2] = z * (dir[0] / x);
+	if (x != 0)
+		dir[2] = z * (dir[0] / x);
+	else
+		dir[2] = z * (dir[1] / y);
 }
 
 int GzFindFocalPoint(MyRaycast* raycast, float focalDistance) {
@@ -70,6 +73,7 @@ int GzFindNearestHit(MyRaycast* raycast, GzRender* render) {
 		}
 		coordPlus(coord, dir2d);
 	}
+	coord[2] = 1;
 	clampWithRes(coord, render->display->xres, render->display->yres);
 	coordCopy(raycast->nearestHit, coord);
 	return GZ_SUCCESS;
