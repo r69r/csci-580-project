@@ -12,6 +12,8 @@
 #include "Gz.h"
 #include "disp.h"
 #include "rend.h"
+#include "MyRaycast.h"
+#include "MyHelperFunction.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -22,6 +24,8 @@ static char THIS_FILE[]=__FILE__;
 #define INFILE  "ppot.asc"
 #define OUTFILE "output.ppm"
 
+
+#define		M_PI	(3.14159265359)
 
 extern int tex_fun(float u, float v, GzColor color); /* image texture function */
 extern int ptex_fun(float u, float v, GzColor color); /* procedural texture function */
@@ -416,6 +420,83 @@ int Application5::Render()
 			m_pDisplay->fbuf[(i + (j * m_pDisplay->xres))].blue = max(0, min(b, 4095));
 		}
 	}
+
+	//depth of field raycast
+	GzCoord cameraPos;
+	cameraPos[0] = m_pDisplay->xres/2.0f;
+	cameraPos[1] = m_pDisplay->yres / 2.0f;
+	float radian = (M_PI / 180) * m_pRender1->camera.FOV;
+	float d = (float)m_pDisplay->xres /2.0f / tan(radian / 2);
+	//d = 1.0f / d;
+	cameraPos[2] = -d;
+	//Set parameters here
+	float focalDist = d*0.8f;
+	float apertureSize = 1.0f;
+	float blurWeight = 0.9f;
+
+	int blurColors[256][256][3];
+
+	for (int j = 0; j < m_pDisplay->yres; j++) {
+		for (int i = 0; i < m_pDisplay->xres; i++) {
+			GzPixel pixel = m_pDisplay->fbuf[i + j*m_pDisplay->xres];
+			GzCoord pixelCoord{ i, j, pixel.z / (float)INT_MAX}; // change z to 0-1 
+			MyRay fray;
+			GzInitRay(&fray, cameraPos, pixelCoord);
+			MyRaycast* focal = new MyRaycast();
+			GzInitRaycastWithFocal(focal, &fray, focalDist, m_pRender1);
+			GzCoord focalPoint;
+			coordCopy(focalPoint, focal->focalPoint);
+			int rayCount = 10;
+			blurColors[i][j][0] = 0;
+			blurColors[i][j][1] = 0;
+			blurColors[i][j][2] = 0;
+
+			for (int a = 0; a != rayCount; ++a) {
+				MyRay ray;
+				GzCoord aperturePos;
+				coordCopy(aperturePos, cameraPos);
+				aperturePos[0] += apertureSize * sin((float)a / (float)rayCount*2.0f*M_PI);
+				aperturePos[1] += apertureSize * cos((float)a / (float)rayCount*2.0f*M_PI);
+				GzInitRay(&ray, aperturePos, focalPoint);
+				MyRaycast *raycast = new MyRaycast();
+				GzInitRaycast(raycast, &ray, m_pRender1);
+				//roundUpFloat(raycast->nearestHit[0]);
+				//roundUpFloat(raycast->nearestHit[1]);
+				GzPixel hitPixel = m_pDisplay->fbuf[(int)roundf(raycast->nearestHit[0]) + ((int)roundf(raycast->nearestHit[1])) * m_pDisplay->xres];
+				
+				//Add colors to get average
+				blurColors[i][j][RED] += hitPixel.red;
+				blurColors[i][j][GREEN] += hitPixel.green;
+				blurColors[i][j][BLUE] += hitPixel.blue;
+				//Debug information
+				/*if (hitPixel.red != pixel.red) {
+					float dx = raycast->nearestHit[0] - cameraPos[0];
+					float dy = raycast->nearestHit[1] - cameraPos[1];
+					GzCoord dd = { dx, dy, raycast->nearestHit[2] - cameraPos[2] };
+					coordNormalize(dd);
+				    //printf("1");
+				}*/
+				delete raycast;
+			}
+			//average colors
+			for (int a = 0; a != 3; ++a) {
+				blurColors[i][j][a] /= rayCount;
+				while (blurColors[i][j][a] > SHORT_MAX)blurColors[i][j][a] >> 1;
+			}
+
+			delete focal;
+		}
+	}
+
+	//Apply blur with weight
+	for (int j = 0; j < m_pDisplay->yres; j++) {
+		for (int i = 0; i < m_pDisplay->xres; i++) {
+			m_pDisplay->fbuf[i + j*m_pDisplay->xres].red = m_pDisplay->fbuf[i + j*m_pDisplay->xres].red * (1.0f - blurWeight) + blurWeight*blurColors[i][j][RED];
+			m_pDisplay->fbuf[i + j*m_pDisplay->xres].blue = m_pDisplay->fbuf[i + j*m_pDisplay->xres].blue * (1.0f - blurWeight) + blurWeight*blurColors[i][j][BLUE];
+			m_pDisplay->fbuf[i + j*m_pDisplay->xres].green = m_pDisplay->fbuf[i + j*m_pDisplay->xres].green * (1.0f - blurWeight) + blurWeight*blurColors[i][j][GREEN];
+		}
+	}
+	// End depth of field raycast
 
 	GzFlushDisplay2File(outfile, m_pDisplay); 	/* write out or update display to file*/
 	GzFlushDisplay2FrameBuffer(m_pFrameBuffer, m_pDisplay);	// write out or update display to frame buffer
