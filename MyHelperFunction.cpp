@@ -53,7 +53,7 @@ void coordMulti(GzCoord coord, float times) {
 float coordDot(GzCoord left, GzCoord right) {
 	float res = 0;
 	for (int a = 0; a != 3; ++a) {
-		res += left[a] + right[a];
+		res += left[a] * right[a];
 	}
 	return res;
 }
