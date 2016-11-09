@@ -36,6 +36,8 @@
 
 #define	GZ_TEXTURE_MAP	1010		/* texture function ptr */
 
+#define GZ_RAYCAST_COUNT	69		/* raycount for raycasting */
+
 /*
  * value-list attributes
  */
@@ -64,12 +66,12 @@ typedef	int	(*GzTexture)(float u, float v, GzColor color);	/* pointer to texture
 #define GZCAMERA
 typedef struct  GzCamera
 {
-  GzMatrix        Xiw;  	/* xform from world to image space */
-  GzMatrix        Xpi;     /* perspective projection xform */
-  GzCoord         position;  /* position of image plane origin */
-  GzCoord         lookat;         /* position of look-at-point */
-  GzCoord    worldup;   /* world up-vector (almost screen up) */
-  float           FOV;            /* horizontal field of view */
+  GzMatrix		Xiw;  	/* xform from world to image space */
+  GzMatrix      Xpi;     /* perspective projection xform */
+  GzCoord       position;  /* position of image plane origin */
+  GzCoord       lookat;         /* position of look-at-point */
+  GzCoord		worldup;   /* world up-vector (almost screen up) */
+  float         FOV;            /* horizontal field of view */
 } GzCamera;
 #endif
 
