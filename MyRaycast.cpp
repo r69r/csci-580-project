@@ -8,9 +8,9 @@
 
 void clampWithRes(GzCoord coord, int xres, int yres) {
 	if (coord[0] < 0)coord[0] = 0;
-	if (coord[0] > xres) coord[0] = xres;
+	if (coord[0] >= xres) coord[0] = xres - 1;
 	if (coord[1] < 0)coord[1] = 0;
-	if (coord[1] > xres) coord[1] = yres;
+	if (coord[1] >= yres) coord[1] = yres - 1;
 	if (coord[2] < 0)coord[2] = 0;
 	if (coord[2] > 1) coord[2] = 1;
 }
@@ -44,7 +44,6 @@ int GzFindFocalPoint(MyRaycast* raycast, float focalDistance) {
 	coordCopy(raycast->focalPoint, ray->direction);
 	coordMulti(raycast->focalPoint, focalDistance);
 	coordPlus(raycast->focalPoint, ray->startPoint);
-	//coordCopy(raycast->focalPoint, focalPoint);
 	return GZ_SUCCESS;
 }
 
@@ -61,13 +60,12 @@ int GzFindNearestHit(MyRaycast* raycast, GzRender* render) {
 		int x = coord[0], y = coord[1];
 		x = coord[0] - x > 0.5f ? x + 1 : x;
 		y = coord[1] - y > 0.5f ? y + 1 : y;
-		float z = coord[2];//GzFindZWithXYCoord(ray, coord);
+		float z = coord[2];
 		float pz = render->display->fbuf[DISPARRAY(x, y)].z/ (float)INT_MAX;
 		if (pz <= z) {
 			coord[0] = x;
 			coord[1] = y;
 			coordCopy(raycast->nearestHit, coord);
-			//raycast->nearestHit[2] = z;
 			return GZ_SUCCESS;
 		}
 		coordPlus(coord, dir2d);
