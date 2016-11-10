@@ -35,6 +35,7 @@
 #define GZ_DISTRIBUTION_COEFFICIENT	1004	/* specular power of material */
 
 #define	GZ_TEXTURE_MAP	1010		/* texture function ptr */
+#define GZ_BOKEH_TEXTURE_MAP	1011	/* bokeh texture function ptr */
 
 #define GZ_RAYCAST_COUNT	69		/* raycount for raycasting */
 
