@@ -121,6 +121,8 @@ int bokehtex_fun(float u, float v, GzColor color)
 	int i, j;
 	FILE *fd;
 
+	reset = 1;
+
 	if (reset) {          /* open and load texture file */
 		fd = fopen("bokeh", "rb");
 		if (fd == NULL) {
@@ -173,9 +175,12 @@ int bokehtex_fun(float u, float v, GzColor color)
 	d[RED] = image[D[U] + (xs * D[V])][RED];
 	d[GREEN] = image[D[U] + (xs * D[V])][GREEN];
 	d[BLUE] = image[D[U] + (xs * D[V])][BLUE];
-
+	
 	float s = (u - A[U]) / (B[U] - A[U]);
 	float t = (A[V] - v) / (A[V] - D[V]);
+
+	if (B[U] == A[U]) s = 0;
+	if (A[V] == D[V]) t = 0;
 
 	p[RED] = (s * t * c[RED]) + ((1 - s) * t * d[RED]) + (s * (1 - t) * b[RED]) + ((1 - s) * (1 - t) * a[RED]);
 	p[GREEN] = (s * t * c[GREEN]) + ((1 - s) * t * d[GREEN]) + (s * (1 - t) * b[GREEN]) + ((1 - s) * (1 - t) * a[GREEN]);

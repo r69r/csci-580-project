@@ -69,8 +69,8 @@ int Application5::Initialize()
 	/* 
 	 * initialize the display and the renderer 
 	 */ 
- 	m_nWidth = 512;		// frame buffer and display width
-	m_nHeight = 512;    // frame buffer and display height
+ 	m_nWidth = 256;		// frame buffer and display width
+	m_nHeight = 256;    // frame buffer and display height
 
 	status |= GzNewFrameBuffer(&m_pFrameBuffer, m_nWidth, m_nHeight);
 
@@ -499,6 +499,42 @@ int Application5::Render()
 				(1.0f - blurWeight) + blurWeight * blurColors[GREEN];
 			m_pDisplay->fbuf[i + j * m_pDisplay->xres].blue = m_pDisplay->fbuf[i + j * m_pDisplay->xres].blue * 
 				(1.0f - blurWeight) + blurWeight * blurColors[BLUE];
+
+			// Draw bokeh texture
+			int bokehScale = (int)roundf(m_nHeight / 20); // controlled by distance to focal plane
+			float bokehAlpha = 0.69f; // controlled by distance to focal plane
+
+			if (i == m_nWidth / 2 && j == m_nHeight / 2) {
+				for (int k = 0; k < bokehScale; k++) {
+					for (int l = 0; l < bokehScale; l++) {
+						GzColor bokehColor;
+						float u = (float)l / bokehScale;
+						float v = (float)k / bokehScale;
+						(GzTexture(m_pRender1->bokehtex_fun))(u, v, bokehColor);
+
+						bokehColor[RED] = (short)((int)(bokehColor[RED] * ((1 << 12) - 1)));
+						bokehColor[GREEN] = (short)((int)(bokehColor[GREEN] * ((1 << 12) - 1)));
+						bokehColor[BLUE] = (short)((int)(bokehColor[BLUE] * ((1 << 12) - 1)));
+
+						bokehColor[RED] = max(0, min(bokehColor[RED], 4095));
+						bokehColor[GREEN] = max(0, min(bokehColor[GREEN], 4095));
+						bokehColor[BLUE] = max(0, min(bokehColor[BLUE], 4095));
+
+						// Only draw bokeh mask
+						if (bokehColor[RED] < 3000
+							&& bokehColor[GREEN] < 3000
+							&& bokehColor[BLUE] < 3000)
+							continue;
+
+						m_pDisplay->fbuf[(i - (bokehScale / 2) + l) + (j - (bokehScale / 2) + k) * m_pDisplay->xres].red =
+							m_pDisplay->fbuf[(i - (bokehScale / 2) + l) + (j - (bokehScale / 2) + k) * m_pDisplay->xres].red * (1.0f - bokehAlpha) + (bokehAlpha * bokehColor[RED]);
+						m_pDisplay->fbuf[(i - (bokehScale / 2) + l) + (j - (bokehScale / 2) + k) * m_pDisplay->xres].green =
+							m_pDisplay->fbuf[(i - (bokehScale / 2) + l) + (j - (bokehScale / 2) + k) * m_pDisplay->xres].green * (1.0f - bokehAlpha) + (bokehAlpha * bokehColor[GREEN]);
+						m_pDisplay->fbuf[(i - (bokehScale / 2) + l) + (j - (bokehScale / 2) + k) * m_pDisplay->xres].blue =
+							m_pDisplay->fbuf[(i - (bokehScale / 2) + l) + (j - (bokehScale / 2) + k) * m_pDisplay->xres].blue * (1.0f - bokehAlpha) + (bokehAlpha * bokehColor[BLUE]);
+					}
+				}
+			}
 		}
 	}
 	// End depth of field
