@@ -409,6 +409,10 @@ int GzPutAttribute(GzRender	*render, int numAttributes, GzToken	*nameList,
 								valueList++;
 								break;
 
+		case GZ_BOKEH_TEXTURE_MAP:	render->bokehtex_fun = (*(GzTexture*)valueList);
+									valueList++;
+									break;
+
 		case GZ_AASHIFTX:	render->aaShiftX = ((double*)*valueList)[X];
 							valueList++;
 							break;

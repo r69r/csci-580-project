@@ -28,6 +28,7 @@ static char THIS_FILE[]=__FILE__;
 
 extern int tex_fun(float u, float v, GzColor color); /* image texture function */
 extern int ptex_fun(float u, float v, GzColor color); /* procedural texture function */
+extern int bokehtex_fun(float u, float v, GzColor color); /* bokeh texture function */
 
 void shade(GzCoord norm, GzCoord color);
 
@@ -225,12 +226,15 @@ GzMatrix	rotateY =
 #else
         valueListShader[5] = (GzPointer)(tex_fun);	/* or use ptex_fun */
 #endif
-		status |= GzPutAttribute(m_pRender1, 6, nameListShader, valueListShader);
-		status |= GzPutAttribute(m_pRender2, 6, nameListShader, valueListShader);
-		status |= GzPutAttribute(m_pRender3, 6, nameListShader, valueListShader);
-		status |= GzPutAttribute(m_pRender4, 6, nameListShader, valueListShader);
-		status |= GzPutAttribute(m_pRender5, 6, nameListShader, valueListShader);
-		status |= GzPutAttribute(m_pRender6, 6, nameListShader, valueListShader);
+		nameListShader[6] = GZ_BOKEH_TEXTURE_MAP;
+		valueListShader[6] = (GzPointer)(bokehtex_fun);
+
+		status |= GzPutAttribute(m_pRender1, 7, nameListShader, valueListShader);
+		status |= GzPutAttribute(m_pRender2, 7, nameListShader, valueListShader);
+		status |= GzPutAttribute(m_pRender3, 7, nameListShader, valueListShader);
+		status |= GzPutAttribute(m_pRender4, 7, nameListShader, valueListShader);
+		status |= GzPutAttribute(m_pRender5, 7, nameListShader, valueListShader);
+		status |= GzPutAttribute(m_pRender6, 7, nameListShader, valueListShader);
 
 		/*
 		* Tokens associated with anti-aliasing
