@@ -12,7 +12,7 @@ void clampWithRes(GzCoord coord, int xres, int yres) {
 	if (coord[1] < 0)coord[1] = 0;
 	if (coord[1] > xres) coord[1] = yres;
 	if (coord[2] < 0)coord[2] = 0;
-	if (coord[2] > 1) coord[2] = 1;
+	//if (coord[2] > INT_MAX) coord[2] = 1;
 }
 
 int GzInitRay(MyRay* ray, GzCoord startPoint, GzCoord endPoint) {
@@ -56,13 +56,16 @@ int GzFindNearestHit(MyRaycast* raycast, GzRender* render) {
 	if (dir2d[0] == 0 && dir2d[1] == 0)return GZ_FAILURE;
 	GzCoord coord;
 	coordCopy(coord, ray->startPoint);
+	float zscale = -coord[2] / dir2d[2];
+	coord[0] += dir2d[0]*zscale;
+	coord[1] += dir2d[1] * zscale;
 	GzDisplay* disp = render->display;
 	while (coord[0] > 0 && coord[0] < disp->xres && coord[1] > 0 && coord[1] < disp->yres) {
 		int x = coord[0], y = coord[1];
 		x = coord[0] - x > 0.5f ? x + 1 : x;
 		y = coord[1] - y > 0.5f ? y + 1 : y;
 		float z = coord[2];//GzFindZWithXYCoord(ray, coord);
-		float pz = render->display->fbuf[DISPARRAY(x, y)].z/ (float)INT_MAX;
+		float pz = render->display->fbuf[DISPARRAY(x, y)].z;
 		if (pz <= z) {
 			coord[0] = x;
 			coord[1] = y;
@@ -70,6 +73,7 @@ int GzFindNearestHit(MyRaycast* raycast, GzRender* render) {
 			//raycast->nearestHit[2] = z;
 			return GZ_SUCCESS;
 		}
+		if (z >= INT_MAX)break;
 		coordPlus(coord, dir2d);
 	}
 	coord[2] = 1;

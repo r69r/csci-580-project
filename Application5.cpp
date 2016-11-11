@@ -426,12 +426,12 @@ int Application5::Render()
 	cameraPos[0] = m_pDisplay->xres/2.0f;
 	cameraPos[1] = m_pDisplay->yres / 2.0f;
 	float radian = (M_PI / 180) * m_pRender1->camera.FOV;
-	float d = (float)m_pDisplay->xres /2.0f / tan(radian / 2);
+	float d = (float)m_pDisplay->xres  / tan(radian / 2);
 	//d = 1.0f / d;
 	cameraPos[2] = -d;
 	//Set parameters here
-	float focalDist = d*0.8f;
-	float apertureSize = 1.0f;
+	float focalDist = 100000000; //Sharp around 500,000,000
+	float apertureSize = 0.1f;
 	float blurWeight = 0.9f;
 
 	int blurColors[256][256][3];
@@ -439,7 +439,7 @@ int Application5::Render()
 	for (int j = 0; j < m_pDisplay->yres; j++) {
 		for (int i = 0; i < m_pDisplay->xres; i++) {
 			GzPixel pixel = m_pDisplay->fbuf[i + j*m_pDisplay->xres];
-			GzCoord pixelCoord{ i, j, pixel.z / (float)INT_MAX}; // change z to 0-1 
+			GzCoord pixelCoord{ i, j, pixel.z}; // change z to 0-1 
 			MyRay fray;
 			GzInitRay(&fray, cameraPos, pixelCoord);
 			MyRaycast* focal = new MyRaycast();
@@ -469,13 +469,13 @@ int Application5::Render()
 				blurColors[i][j][GREEN] += hitPixel.green;
 				blurColors[i][j][BLUE] += hitPixel.blue;
 				//Debug information
-				/*if (hitPixel.red != pixel.red) {
+				if (hitPixel.red != pixel.red) {
 					float dx = raycast->nearestHit[0] - cameraPos[0];
 					float dy = raycast->nearestHit[1] - cameraPos[1];
 					GzCoord dd = { dx, dy, raycast->nearestHit[2] - cameraPos[2] };
 					coordNormalize(dd);
 				    //printf("1");
-				}*/
+				}
 				delete raycast;
 			}
 			//average colors
