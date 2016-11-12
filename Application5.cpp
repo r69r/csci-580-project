@@ -426,21 +426,23 @@ int Application5::Render()
 
 	// Depth of field
 	GzCoord cameraPos;
-	cameraPos[X] = m_pDisplay->xres / 2.0f;
-	cameraPos[Y] = m_pDisplay->yres / 2.0f;
+	cameraPos[0] = m_pDisplay->xres / 2.0f;
+	cameraPos[1] = m_pDisplay->yres / 2.0f;
+	float radian = (M_PI / 180) * m_pRender1->camera.FOV;
+	float d = (float)m_pDisplay->xres / tan(radian / 2);
+	//d = 1.0f / d;
+	cameraPos[2] = -d;
+	//Set parameters here
+	float focalDist = 400000000; //Sharp around 500,000,000
+	float apertureSize = 0.1f;
+	float blurWeight = 0.9f;
 
-	float radian = m_pRender1->camera.FOV * (M_PI / 180);
-	float d = (float)m_pDisplay->xres / 2.0f / tan(radian / 2);
-	cameraPos[Z] = -d;
-
-	// Set camera parameters here
-	float focalDist = d * 1.0f;
-	float apertureSize = 50.0f;
-	float blurWeight = 0.95f;
+	int blurColors[256][256][3];
 
 	for (int j = 0; j < m_pDisplay->yres; j++) {
 		for (int i = 0; i < m_pDisplay->xres; i++) {
-			GzPixel pixel = m_pDisplay->fbuf[i + j * m_pDisplay->xres];
+			//int x = m_pDisplay->fbuf[i + j*m_pDisplay->xres].red;
+			GzPixel pixel = m_pDisplay1->fbuf[i + j * m_pDisplay->xres];
 			GzCoord pixelCoord{ i, j, pixel.z / (float)INT_MAX }; // Scale z between [0,1] 
 
 			MyRay fray;
@@ -503,8 +505,12 @@ int Application5::Render()
 			// Draw bokeh texture
 			int bokehScale = (int)roundf(m_nHeight / 20); // controlled by distance to focal plane
 			float bokehAlpha = 0.69f; // controlled by distance to focal plane
+			//int x = m_pDisplay->fbuf[i + j*m_pDisplay->xres].red;
+			float Zinperspective = m_pDisplay1->fbuf[i + j*m_pDisplay1->xres].z / (float)INT_MAX;
 
-			if (i == m_nWidth / 2 && j == m_nHeight / 2) {
+			float bokehFactor = (Zinperspective);
+			bokehScale *= bokehFactor;
+			if(bokehFactor!=1.f){
 				for (int k = 0; k < bokehScale; k++) {
 					for (int l = 0; l < bokehScale; l++) {
 						GzColor bokehColor;
@@ -525,13 +531,14 @@ int Application5::Render()
 							&& bokehColor[GREEN] < 3000
 							&& bokehColor[BLUE] < 3000)
 							continue;
-
-						m_pDisplay->fbuf[(i - (bokehScale / 2) + l) + (j - (bokehScale / 2) + k) * m_pDisplay->xres].red =
-							m_pDisplay->fbuf[(i - (bokehScale / 2) + l) + (j - (bokehScale / 2) + k) * m_pDisplay->xres].red * (1.0f - bokehAlpha) + (bokehAlpha * bokehColor[RED]);
-						m_pDisplay->fbuf[(i - (bokehScale / 2) + l) + (j - (bokehScale / 2) + k) * m_pDisplay->xres].green =
-							m_pDisplay->fbuf[(i - (bokehScale / 2) + l) + (j - (bokehScale / 2) + k) * m_pDisplay->xres].green * (1.0f - bokehAlpha) + (bokehAlpha * bokehColor[GREEN]);
-						m_pDisplay->fbuf[(i - (bokehScale / 2) + l) + (j - (bokehScale / 2) + k) * m_pDisplay->xres].blue =
-							m_pDisplay->fbuf[(i - (bokehScale / 2) + l) + (j - (bokehScale / 2) + k) * m_pDisplay->xres].blue * (1.0f - bokehAlpha) + (bokehAlpha * bokehColor[BLUE]);
+						if ((i - (bokehScale / 2) + l) > 0 && (i - (bokehScale / 2) + l) < m_pDisplay->xres && (j - (bokehScale / 2) + k) > 0 && (j - (bokehScale / 2) + k) < m_nHeight) {
+							/*m_pDisplay->fbuf[(i - (bokehScale / 2) + l) + (j - (bokehScale / 2) + k) * m_pDisplay->xres].red =
+								m_pDisplay->fbuf[(i - (bokehScale / 2) + l) + (j - (bokehScale / 2) + k) * m_pDisplay->xres].red * (1.0f - bokehAlpha) + (bokehAlpha * bokehColor[RED]);
+							m_pDisplay->fbuf[(i - (bokehScale / 2) + l) + (j - (bokehScale / 2) + k) * m_pDisplay->xres].green =
+								m_pDisplay->fbuf[(i - (bokehScale / 2) + l) + (j - (bokehScale / 2) + k) * m_pDisplay->xres].green * (1.0f - bokehAlpha) + (bokehAlpha * bokehColor[GREEN]);
+							m_pDisplay->fbuf[(i - (bokehScale / 2) + l) + (j - (bokehScale / 2) + k) * m_pDisplay->xres].blue =
+								m_pDisplay->fbuf[(i - (bokehScale / 2) + l) + (j - (bokehScale / 2) + k) * m_pDisplay->xres].blue * (1.0f - bokehAlpha) + (bokehAlpha * bokehColor[BLUE]);*/
+						}
 					}
 				}
 			}

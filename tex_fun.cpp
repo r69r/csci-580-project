@@ -6,7 +6,7 @@
 GzColor	*image = NULL;
 int xs, ys;
 int reset = 1;
-
+int bokehreset = 1;
 /* Image texture function */
 int tex_fun(float u, float v, GzColor color)
 {
@@ -121,9 +121,9 @@ int bokehtex_fun(float u, float v, GzColor color)
 	int i, j;
 	FILE *fd;
 
-	reset = 1;
+	//bokehreset = 1;
 
-	if (reset) {          /* open and load texture file */
+	if (bokehreset) {          /* open and load texture file */
 		fd = fopen("bokeh", "rb");
 		if (fd == NULL) {
 			fprintf(stderr, "texture file not found\n");
@@ -143,7 +143,7 @@ int bokehtex_fun(float u, float v, GzColor color)
 			image[i][BLUE] = (float)((int)pixel[BLUE]) * (1.0 / 255.0);
 		}
 
-		reset = 0;          /* init is done */
+		bokehreset = 0;          /* init is done */
 		fclose(fd);
 	}
 
