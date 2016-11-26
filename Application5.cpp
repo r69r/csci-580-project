@@ -69,8 +69,8 @@ int Application5::Initialize()
 	/* 
 	 * initialize the display and the renderer 
 	 */ 
- 	m_nWidth = 512;		// frame buffer and display width
-	m_nHeight = 512;    // frame buffer and display height
+ 	m_nWidth = 256;		// frame buffer and display width
+	m_nHeight = 256;    // frame buffer and display height
 
 	status |= GzNewFrameBuffer(&m_pFrameBuffer, m_nWidth, m_nHeight);
 
@@ -105,37 +105,37 @@ int Application5::Initialize()
 GzMatrix	scale = 
 { 
 	3.25,	0.0,	0.0,	0.0, 
-	0.0,	3.25,	0.0,	-3.25, 
-	0.0,	0.0,	3.25,	3.5, 
+	0.0,	3.25,	0.0,	0.0, 
+	0.0,	0.0,	3.25,	0.0, 
 	0.0,	0.0,	0.0,	1.0 
 }; 
  
 GzMatrix	rotateX = 
 { 
 	1.0,	0.0,	0.0,	0.0, 
-	0.0,	.7071,	.7071,	0.0, 
-	0.0,	-.7071,	.7071,	0.0, 
+	0.0,	1.0,	0.0,	0.0, 
+	0.0,	0.0,	1.0,	0.0, 
 	0.0,	0.0,	0.0,	1.0 
 }; 
  
 GzMatrix	rotateY = 
 { 
-	.866,	0.0,	-0.5,	0.0, 
-	0.0,	1.0,	0.0,	0.0, 
-	0.5,	0.0,	.866,	0.0, 
-	0.0,	0.0,	0.0,	1.0 
+	1.0,	0.0,	0.0,	0.0,
+	0.0,	1.0,	0.0,	0.0,
+	0.0,	0.0,	1.0,	0.0,
+	0.0,	0.0,	0.0,	1.0
 }; 
 
 #if 1 	/* set up app-defined camera if desired, else use camera defaults */
-    camera.position[X] = -3;
-    camera.position[Y] = -25;
-    camera.position[Z] = -4;
+    camera.position[X] = 30.0;
+    camera.position[Y] = 10;
+    camera.position[Z] = -15.0;
 
-    camera.lookat[X] = 7.8;
-    camera.lookat[Y] = 0.7;
-    camera.lookat[Z] = 6.5;
+    camera.lookat[X] = -0.5;
+    camera.lookat[Y] = 0.0;
+    camera.lookat[Z] = 1.0;
 
-    camera.worldup[X] = -0.2;
+    camera.worldup[X] = 0.0;
     camera.worldup[Y] = 1.0;
     camera.worldup[Z] = 0.0;
 
@@ -434,8 +434,8 @@ int Application5::Render()
 	cameraPos[Z] = -d;
 
 	// Set camera parameters here
-	float focalDist = d * 1.0f;
-	float apertureSize = 50.0f;
+	float focalDist = d * 1.1f;
+	float apertureSize = 60.0f;
 	float blurWeight = 0.95f;
 
 	for (int j = 0; j < m_pDisplay->yres; j++) {
