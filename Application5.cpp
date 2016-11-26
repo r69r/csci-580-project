@@ -69,8 +69,8 @@ int Application5::Initialize()
 	/* 
 	 * initialize the display and the renderer 
 	 */ 
- 	m_nWidth = 256;		// frame buffer and display width
-	m_nHeight = 256;    // frame buffer and display height
+ 	m_nWidth = 512;		// frame buffer and display width
+	m_nHeight = 512;    // frame buffer and display height
 
 	status |= GzNewFrameBuffer(&m_pFrameBuffer, m_nWidth, m_nHeight);
 
@@ -104,8 +104,8 @@ int Application5::Initialize()
 /* Translation matrix */
 GzMatrix	scale = 
 { 
-	3.25,	0.0,	0.0,	0.0, 
-	0.0,	3.25,	0.0,	0.0, 
+	3.25,	0.0,	0.0,	-3.0, 
+	0.0,	3.25,	0.0,	-3.0, 
 	0.0,	0.0,	3.25,	0.0, 
 	0.0,	0.0,	0.0,	1.0 
 }; 
@@ -127,11 +127,11 @@ GzMatrix	rotateY =
 }; 
 
 #if 1 	/* set up app-defined camera if desired, else use camera defaults */
-    camera.position[X] = 30.0;
-    camera.position[Y] = 10;
-    camera.position[Z] = -15.0;
+    camera.position[X] = 10.0;
+    camera.position[Y] = 10.0;
+    camera.position[Z] = -12.5;
 
-    camera.lookat[X] = -0.5;
+    camera.lookat[X] = 1.0;
     camera.lookat[Y] = 0.0;
     camera.lookat[Z] = 1.0;
 
@@ -158,9 +158,9 @@ GzMatrix	rotateY =
 	status |= GzBeginRender(m_pRender6);
 
 	/* Light */
-	GzLight	light1 = { {-0.7071, 0.7071, 0}, {0.5, 0.5, 0.9} };
-	GzLight	light2 = { {0, -0.7071, -0.7071}, {0.9, 0.2, 0.3} };
-	GzLight	light3 = { {0.7071, 0.0, -0.7071}, {0.2, 0.7, 0.3} };
+	GzLight	light1 = { {-0.7071, 0.7071, 0}, {0.5, 0.3, 0.3} };
+	GzLight	light2 = { {0, -0.7071, -0.7071}, {0.5, 0.5, 0.3} };
+	GzLight	light3 = { {0.7071, 0.0, -0.7071}, {0.7, 0.7, 0.3} };
 	GzLight	ambientlight = { {0, 0, 0}, {0.3, 0.3, 0.3} };
 
 	/* Material property */
@@ -434,8 +434,8 @@ int Application5::Render()
 	cameraPos[Z] = -d;
 
 	// Set camera parameters here
-	float focalDist = d * 1.1f;
-	float apertureSize = 60.0f;
+	float focalDist = d * 1.0f;
+	float apertureSize = 45.0f;
 	float blurWeight = 0.95f;
 
 	for (int j = 0; j < m_pDisplay->yres; j++) {
@@ -512,8 +512,11 @@ int Application5::Render()
 
 			// Draw bokeh texture
 			if (m_pDisplay1->fbuf[i + j * m_pDisplay->xres].z != MAXINT) {
-				int bokehScale = (((float)blurCount / (float)GZ_RAYCAST_COUNT) * 10); // controlled by distance to focal plane
-				float bokehAlpha = (3.0f / (float)bokehScale); // controlled by distance to focal plane
+				int bokehScale = (((float)blurCount / (float)GZ_RAYCAST_COUNT) * 20); // controlled by distance to focal plane
+				float bokehAlpha = (4.0f / (float)bokehScale); // controlled by distance to focal plane
+
+				if (bokehScale < 18)
+					continue;
 
 				for (int k = 0; k < bokehScale; k++) {
 					for (int l = 0; l < bokehScale; l++) {
