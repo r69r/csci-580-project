@@ -244,7 +244,7 @@ FakesAssemblies/
 
 # Visual Studio 6 auto-generated workspace file (contains which files were open etc.)
 *.vbw
-
+output.ppm
 # Visual Studio LightSwitch build output
 **/*.HTMLClient/GeneratedArtifacts
 **/*.DesktopClient/GeneratedArtifacts
@@ -273,5 +273,6 @@ __pycache__/
 
 # Cake - Uncomment if you are using it
 # tools/
+output.ppm
 output.ppm
 output.ppm
