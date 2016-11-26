@@ -69,8 +69,8 @@ int Application5::Initialize()
 	/* 
 	 * initialize the display and the renderer 
 	 */ 
- 	m_nWidth = 256;		// frame buffer and display width
-	m_nHeight = 256;    // frame buffer and display height
+ 	m_nWidth = 512;		// frame buffer and display width
+	m_nHeight = 512;    // frame buffer and display height
 
 	status |= GzNewFrameBuffer(&m_pFrameBuffer, m_nWidth, m_nHeight);
 
@@ -472,18 +472,28 @@ int Application5::Render()
 				GzInitRay(&ray, aperturePos, focalPoint);
 				MyRaycast *raycast = new MyRaycast();
 				GzInitRaycast(raycast, &ray, m_pRender1);
-				GzPixel hitPixel = m_pDisplay->fbuf[(int)roundf(raycast->nearestHit[X]) + 
+				GzPixel hitPixel = m_pDisplay->fbuf[(int)roundf(raycast->nearestHit[X]) +
 					((int)roundf(raycast->nearestHit[Y])) * m_pDisplay->xres];
 
 				if (hitPixel.red < 0 || hitPixel.green < 0 || hitPixel.blue < 0)
 					continue;
 
-				// Accumulate blur colors
-				blurColors[RED] += hitPixel.red;
-				blurColors[GREEN] += hitPixel.green;
-				blurColors[BLUE] += hitPixel.blue;
-				blurCount++;
+				if (hitPixel.red != m_pDisplay->fbuf[i + j * m_pDisplay->xres].red
+					&& hitPixel.green != m_pDisplay->fbuf[i + j * m_pDisplay->xres].green
+					&& hitPixel.blue != m_pDisplay->fbuf[i + j * m_pDisplay->xres].blue) {
 
+					// Accumulate blur colors
+					blurColors[RED] += hitPixel.red;
+					blurColors[GREEN] += hitPixel.green;
+					blurColors[BLUE] += hitPixel.blue;
+					blurCount++;
+				}
+				else {
+					blurColors[RED] = hitPixel.red;
+					blurColors[GREEN] = hitPixel.green;
+					blurColors[BLUE] = hitPixel.blue;
+					blurCount = 1;
+				}
 				delete raycast;
 			}
 			// Average blur colors
@@ -493,18 +503,18 @@ int Application5::Render()
 
 			delete focal;
 
-			m_pDisplay->fbuf[i + j * m_pDisplay->xres].red = m_pDisplay->fbuf[i + j * m_pDisplay->xres].red * 
+			m_pDisplay->fbuf[i + j * m_pDisplay->xres].red = m_pDisplay->fbuf[i + j * m_pDisplay->xres].red *
 				(1.0f - blurWeight) + blurWeight * blurColors[RED];
-			m_pDisplay->fbuf[i + j * m_pDisplay->xres].green = m_pDisplay->fbuf[i + j * m_pDisplay->xres].green * 
+			m_pDisplay->fbuf[i + j * m_pDisplay->xres].green = m_pDisplay->fbuf[i + j * m_pDisplay->xres].green *
 				(1.0f - blurWeight) + blurWeight * blurColors[GREEN];
-			m_pDisplay->fbuf[i + j * m_pDisplay->xres].blue = m_pDisplay->fbuf[i + j * m_pDisplay->xres].blue * 
+			m_pDisplay->fbuf[i + j * m_pDisplay->xres].blue = m_pDisplay->fbuf[i + j * m_pDisplay->xres].blue *
 				(1.0f - blurWeight) + blurWeight * blurColors[BLUE];
 
 			// Draw bokeh texture
-			int bokehScale = (int)roundf(m_nHeight / 20); // controlled by distance to focal plane
-			float bokehAlpha = 0.69f; // controlled by distance to focal plane
+			if (m_pDisplay1->fbuf[i + j * m_pDisplay->xres].z != MAXINT) {
+				int bokehScale = (((float)blurCount / (float)GZ_RAYCAST_COUNT) * 10); // controlled by distance to focal plane
+				float bokehAlpha = (3.0f / (float)bokehScale); // controlled by distance to focal plane
 
-			if (i == m_nWidth / 2 && j == m_nHeight / 2) {
 				for (int k = 0; k < bokehScale; k++) {
 					for (int l = 0; l < bokehScale; l++) {
 						GzColor bokehColor;
@@ -525,6 +535,13 @@ int Application5::Render()
 							&& bokehColor[GREEN] < 3000
 							&& bokehColor[BLUE] < 3000)
 							continue;
+
+						if ((i - (bokehScale / 2) + l) + (j - (bokehScale / 2) + k) * m_pDisplay->xres < 0)
+							continue;
+
+						bokehColor[RED] = m_pDisplay->fbuf[i + j * m_pDisplay->xres].red;
+						bokehColor[GREEN] = m_pDisplay->fbuf[i + j * m_pDisplay->xres].green;
+						bokehColor[BLUE] = m_pDisplay->fbuf[i + j * m_pDisplay->xres].blue;
 
 						m_pDisplay->fbuf[(i - (bokehScale / 2) + l) + (j - (bokehScale / 2) + k) * m_pDisplay->xres].red =
 							m_pDisplay->fbuf[(i - (bokehScale / 2) + l) + (j - (bokehScale / 2) + k) * m_pDisplay->xres].red * (1.0f - bokehAlpha) + (bokehAlpha * bokehColor[RED]);
