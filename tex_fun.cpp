@@ -22,7 +22,7 @@ int tex_fun(float u, float v, GzColor color)
 	FILE *fd;
 
 	if (texReset) {          /* open and load texture file */
-		fd = fopen("texture", "rb");
+		fd = fopen("metaltexture.ppm", "rb");
 		if (fd == NULL) {
 			fprintf(stderr, "texture file not found\n");
 			exit(-1);
@@ -123,7 +123,7 @@ int bokehtex_fun(float u, float v, GzColor color)
 	FILE *fd;
 
 	if (bokehReset) {          /* open and load texture file */
-		fd = fopen("bokeh", "rb");
+		fd = fopen("bokeh.ppm", "rb");
 		if (fd == NULL) {
 			fprintf(stderr, "texture file not found\n");
 			exit(-1);
