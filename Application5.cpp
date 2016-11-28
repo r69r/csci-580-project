@@ -217,7 +217,7 @@ GzMatrix	rotateY =
         nameListShader[3]  = GZ_SPECULAR_COEFFICIENT;
         valueListShader[3] = (GzPointer)specularCoefficient;
         nameListShader[4]  = GZ_DISTRIBUTION_COEFFICIENT;
-        specpower = 32;
+        specpower = 128;
         valueListShader[4] = (GzPointer)&specpower;
 
         nameListShader[5]  = GZ_TEXTURE_MAP;
@@ -434,7 +434,7 @@ int Application5::Render()
 	cameraPos[Z] = -d;
 
 	// Set camera parameters here
-	float focalDist = d * 1.0f;
+	float focalDist = d * 1.2f;
 	float apertureSize = 45.0f;
 	float blurWeight = 0.95f;
 
@@ -515,7 +515,7 @@ int Application5::Render()
 				int bokehScale = (((float)blurCount / (float)GZ_RAYCAST_COUNT) * 20); // controlled by distance to focal plane
 				float bokehAlpha = (4.0f / (float)bokehScale); // controlled by distance to focal plane
 
-				if (bokehScale < 18)
+				if (bokehScale < 19)
 					continue;
 
 				for (int k = 0; k < bokehScale; k++) {
@@ -534,10 +534,11 @@ int Application5::Render()
 						bokehColor[BLUE] = max(0, min(bokehColor[BLUE], 4095));
 
 						// Only draw bokeh mask
-						if (bokehColor[RED] < 3000
-							&& bokehColor[GREEN] < 3000
-							&& bokehColor[BLUE] < 3000)
+						if (bokehColor[RED] == 0
+							&& bokehColor[GREEN] == 0
+							&& bokehColor[BLUE] == 0)
 							continue;
+
 
 						if ((i - (bokehScale / 2) + l) + (j - (bokehScale / 2) + k) * m_pDisplay->xres < 0)
 							continue;
@@ -545,6 +546,11 @@ int Application5::Render()
 						bokehColor[RED] = m_pDisplay->fbuf[i + j * m_pDisplay->xres].red;
 						bokehColor[GREEN] = m_pDisplay->fbuf[i + j * m_pDisplay->xres].green;
 						bokehColor[BLUE] = m_pDisplay->fbuf[i + j * m_pDisplay->xres].blue;
+
+						if(bokehColor[RED])
+						if ((i - (bokehScale / 2) + l)  < 0 || (i - (bokehScale / 2) + l) > m_nWidth
+							|| (j - (bokehScale / 2) + k) < 0 || (j - (bokehScale / 2) + k) > m_nHeight)
+							continue;
 
 						m_pDisplay->fbuf[(i - (bokehScale / 2) + l) + (j - (bokehScale / 2) + k) * m_pDisplay->xres].red =
 							m_pDisplay->fbuf[(i - (bokehScale / 2) + l) + (j - (bokehScale / 2) + k) * m_pDisplay->xres].red * (1.0f - bokehAlpha) + (bokehAlpha * bokehColor[RED]);
